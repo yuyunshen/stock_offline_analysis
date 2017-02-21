@@ -125,7 +125,7 @@ def output_csv(df, dist):
 # output_csv(df, Dist)
 
 
-df = ts.get_hist_data('000838', start=start_date, end=end_date).sort_index(axis=0, ascending=True)
+df = ts.get_hist_data('000022', start=start_date, end=end_date).sort_index(axis=0, ascending=True)
 # print type(df['high'])
 print df
 # print df['volume']
@@ -136,4 +136,4 @@ print df
 # # print df
 # operate1 = 0
 # print KDJ(df['high'], df['low'], df['close'], N=9, M1=3, M2=3)
-# (df, operate1) = Get_KDJ(df)
+(df, operate1) = Get_KDJ(df)

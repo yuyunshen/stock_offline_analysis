@@ -6,7 +6,7 @@ import numpy as np
 import utils.Utils
 
 
-class KDJ(Model.Model):
+class KDJHoleVolumnPrice(Model.Model):
     # return date, operate
     def big_vol(self, stock, length=30, times=2):
         dflen = stock.shape[0]
@@ -19,7 +19,25 @@ class KDJ(Model.Model):
             if (j + 1) >= length:
                 for k in range(0, length):
                     total_volume += stock['volume'][j - k]
-                if cur_volume > times * stock['volume'][j - 1] or cur_volume > times * total_volume / length:
+                if cur_volume > times * stock['volume'][j - 1] and cur_volume > times * total_volume / length:
+                    operate = 1
+            if operate == 1:
+                date_operate[stock.index[j]] = operate
+
+        return date_operate
+
+    def price_small_range(self, stock, length=30, price_range=1.05):
+        dflen = stock.shape[0]
+        date_operate = {}
+        for i in range(dflen):
+            j = dflen - i - 1
+            operate = 0
+            cur_price = stock['close'][j]
+            total_price = 0
+            if (j + 1) >= length:
+                for k in range(0, length):
+                    total_price += stock['close'][j - k]
+                if cur_price < price_range * total_price / length:
                     operate = 1
             if operate == 1:
                 date_operate[stock.index[j]] = operate
@@ -94,10 +112,11 @@ class KDJ(Model.Model):
                 if date_len > 35:
                     operate_kdj_list = self.get_kdj_hole(stock[2], 3)  # weekly data
                     operate_vol_list = self.big_vol(stock[1], 30, 2)  # daily data
+                    operate_price_list = self.price_small_range(stock[1], 30, 1.05) #daily data
                     for weekly_date in operate_kdj_list:
                         next_work_day = utils.Utils.get_next_five_work_day(weekly_date)
                         for daily_day in next_work_day:
-                            if daily_day in operate_vol_list:
+                            if daily_day in operate_vol_list and daily_day in operate_price_list:
                                 if daily_day not in date_selected_stocks:
                                     date_stocks_temp = list()
                                     date_stocks_temp.append(stock[0])
@@ -113,5 +132,5 @@ class KDJ(Model.Model):
 if __name__ == '__main__':
     data_path = '/Users/qinfeizhang/PycharmProjects/stock_offline_analysis/history_data'
     # data_path_test = '/Users/qinfeizhang/PycharmProjects/stock_offline_analysis/history_data_test'
-    a = KDJ(data_path, '20160101')
+    a = KDJHoleVolumnPrice(data_path, '20160101')
     a.run()
